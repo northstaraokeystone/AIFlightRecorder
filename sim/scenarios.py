@@ -1,12 +1,12 @@
-"""7 Mandatory Validation Scenarios
+"""8 Mandatory Validation Scenarios - v2.0
 
 No deployment without ALL scenarios passing.
-Per monte_carlo.docx specification.
+Per monte_carlo.docx specification + v2.0 agent spawning.
 """
 
 from .sim import SimConfig
 
-# SCENARIO 1: BASELINE
+# SCENARIO 1: BASELINE (v2.0: Add agent spawning verification)
 # Standard operation, establish baselines
 BASELINE = SimConfig(
     name="BASELINE",
@@ -16,19 +16,22 @@ BASELINE = SimConfig(
     success_criteria={
         "completion_rate": 0.999,  # 99.9% cycle completion
         "max_violations": 0,
-        "chain_integrity": True
+        "chain_integrity": True,
+        # v2.0 additions
+        "min_green_learners_spawned": 1,  # At least 1 GREEN learner spawned
+        "max_red_helpers_spawned": 0  # Zero RED helpers (no anomalies expected)
     },
-    description="Standard operation, establish baselines"
+    description="Standard operation, establish baselines, verify agent spawning"
 )
 
-# SCENARIO 2: STRESS
+# SCENARIO 2: STRESS (v2.0: Add population cap enforcement)
 # High decision rate, resource constraints
 STRESS = SimConfig(
     name="STRESS",
     n_cycles=500,
     random_seed=123,
     stress_vectors={
-        "decision_rate_multiplier": 5,  # 50Hz instead of 10Hz
+        "decision_rate_multiplier": 10,  # 100Hz for 10x stress
         "max_memory_mb": 256,  # Memory pressure
         "cpu_throttle": 0.5  # CPU throttling
     },
@@ -36,46 +39,63 @@ STRESS = SimConfig(
         "completion_rate": 0.95,
         "p95_latency_ms": 100,
         "max_memory_mb": 512,
-        "max_violations": 0
+        "max_violations": 0,
+        # v2.0 additions
+        "max_agent_population": 50,  # Never exceed 50 agents
+        "max_agent_depth": 3  # No depth > 3 spawning
     },
-    description="High decision rate, resource constraints"
+    description="High decision rate, population cap enforcement"
 )
 
-# SCENARIO 3: TOPOLOGY
+# SCENARIO 3: TOPOLOGY (v2.0: Add classification accuracy + graduation)
 # Validate pattern classification accuracy
 TOPOLOGY = SimConfig(
     name="TOPOLOGY",
     n_cycles=100,
     random_seed=456,
     stress_vectors={
-        "pattern_test": True  # Generate synthetic patterns
+        "pattern_test": True,  # Generate synthetic patterns
+        "inject_open_patterns": 10,  # Known OPEN patterns
+        "inject_closed_patterns": 10,  # Known CLOSED patterns
+        "inject_hybrid_patterns": 5  # Known HYBRID patterns
     },
     success_criteria={
         "completion_rate": 0.99,
-        "classification_accuracy": 0.98  # 98% per class
+        "classification_accuracy": 0.98,  # 98% correct classification
+        # v2.0 additions
+        "open_patterns_graduated": True,  # OPEN patterns must graduate
+        "closed_patterns_pruned": True  # CLOSED patterns must be pruned
     },
-    description="Validate pattern classification accuracy"
+    description="Validate topology classification with graduation/pruning"
 )
 
-# SCENARIO 4: CASCADE
-# High-volume decision logging
-CASCADE = SimConfig(
-    name="CASCADE",
+# SCENARIO 4: BIRTHING (renamed from CASCADE, v2.0: Agent birthing)
+# Test agent spawning and sibling pruning
+BIRTHING = SimConfig(
+    name="BIRTHING",
     n_cycles=100,
     random_seed=789,
     stress_vectors={
-        "pattern_variants": 5  # Each pattern generates 5 variants
+        "inject_red_gate_decisions": 10,  # Inject 10 RED-gate decisions
+        "force_wound_threshold": True  # Force wound threshold triggers
     },
     success_criteria={
         "completion_rate": 0.99,
         "max_violations": 0,
-        "chain_integrity": True
+        "chain_integrity": True,
+        # v2.0 additions
+        "correct_helper_count": True,  # Helpers spawned per wound formula
+        "sibling_pruning_on_solution": True,  # First solution triggers sibling pruning
+        "winner_graduates": True  # Winning helper graduates to permanent pattern
     },
-    description="High-volume decision logging"
+    description="Agent birthing, sibling pruning, winner graduation"
 )
 
-# SCENARIO 5: COMPRESSION
-# Validate anomaly detection via compression
+# Keep CASCADE as alias for backwards compatibility
+CASCADE = BIRTHING
+
+# SCENARIO 5: COMPRESSION (v2.0: Add entropy conservation)
+# Validate anomaly detection via compression + entropy
 COMPRESSION = SimConfig(
     name="COMPRESSION",
     n_cycles=200,
@@ -86,13 +106,16 @@ COMPRESSION = SimConfig(
     success_criteria={
         "completion_rate": 0.99,
         "anomaly_detection_rate": 1.0,  # All anomalies detected
-        "false_positive_rate": 0.0  # No false positives
+        "false_positive_rate": 0.0,  # No false positives
+        # v2.0 additions
+        "entropy_conservation": True,  # entropy_conservation() returns True every cycle
+        "entropy_trend_negative": True  # System entropy trends negative over run
     },
-    description="Validate anomaly detection via compression"
+    description="Anomaly detection + entropy conservation"
 )
 
-# SCENARIO 6: SINGULARITY
-# Long-run stability test
+# SCENARIO 6: SINGULARITY (v2.0: Add self-improvement verification)
+# Long-run stability test with self-improvement
 SINGULARITY = SimConfig(
     name="SINGULARITY",
     n_cycles=10000,  # ~17 minutes simulated
@@ -101,9 +124,12 @@ SINGULARITY = SimConfig(
     success_criteria={
         "completion_rate": 0.999,
         "max_memory_mb": 512,  # No unbounded growth
-        "max_violations": 0
+        "max_violations": 0,
+        # v2.0 additions
+        "graduated_patterns_reduce_spawning": True,  # Patterns reduce future spawns
+        "superposition_not_empty": True  # Some patterns held in reserve
     },
-    description="Long-run stability test"
+    description="Long-run stability + self-improvement verification"
 )
 
 # SCENARIO 7: THERMODYNAMIC
@@ -124,15 +150,36 @@ THERMODYNAMIC = SimConfig(
     description="Hash integrity conservation"
 )
 
-# All scenarios list
+# SCENARIO 8: SELF_REFERENCE (v2.0 NEW)
+# Verify L4 receipts inform L0 processing
+SELF_REFERENCE = SimConfig(
+    name="SELF_REFERENCE",
+    n_cycles=1000,
+    random_seed=192021,
+    stress_vectors={
+        "emit_meta_receipts": True,  # Emit receipts about receipts
+        "enable_self_reference": True  # System references own receipts
+    },
+    success_criteria={
+        "completion_rate": 0.99,
+        "max_violations": 0,
+        # v2.0 criteria
+        "receipt_self_reference": True,  # System references own receipts in decisions
+        "receipt_completeness": 0.95  # Receipt completeness score >= 0.95
+    },
+    description="Verify L4 receipts inform L0 processing (self-awareness)"
+)
+
+# All scenarios list (8 mandatory scenarios for v2.0)
 ALL_SCENARIOS = [
     BASELINE,
     STRESS,
     TOPOLOGY,
-    CASCADE,
+    BIRTHING,  # Renamed from CASCADE
     COMPRESSION,
     SINGULARITY,
-    THERMODYNAMIC
+    THERMODYNAMIC,
+    SELF_REFERENCE  # NEW in v2.0
 ]
 
 # Quick scenarios for fast testing
@@ -183,3 +230,30 @@ def list_scenarios() -> list[str]:
         List of scenario names
     """
     return [s.name for s in ALL_SCENARIOS]
+
+
+# v2.0 Quick scenarios with agent spawning
+QUICK_SCENARIOS_V2 = [
+    SimConfig(
+        name="QUICK_BASELINE_V2",
+        n_cycles=50,
+        random_seed=42,
+        success_criteria={
+            "completion_rate": 0.99,
+            "max_violations": 0,
+            "min_green_learners_spawned": 1
+        }
+    ),
+    SimConfig(
+        name="QUICK_SPAWNING",
+        n_cycles=50,
+        random_seed=44,
+        stress_vectors={
+            "inject_red_gate_decisions": 2
+        },
+        success_criteria={
+            "max_agent_population": 50,
+            "max_agent_depth": 3
+        }
+    )
+]
