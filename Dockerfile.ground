@@ -1,0 +1,59 @@
+# AI Flight Recorder - Ground Control Container
+# Dashboard and verification services
+
+FROM python:3.11-slim
+
+# Labels
+LABEL maintainer="AI Flight Recorder Team"
+LABEL description="Ground control container for AI Flight Recorder"
+LABEL version="1.0"
+
+# Environment
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV TENANT_ID=ground-control-001
+ENV RECEIPTS_FILE=/data/receipts.jsonl
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash flightrecorder
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-ground.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-ground.txt
+
+# Copy application
+COPY src/ ./src/
+COPY sim/ ./sim/
+COPY demo/ ./demo/
+COPY cli.py .
+COPY spec.md .
+COPY ledger_schema.json .
+
+# Create data directory
+RUN mkdir -p /data && chown flightrecorder:flightrecorder /data
+
+# Switch to non-root user
+USER flightrecorder
+
+# Volume for persistent data
+VOLUME ["/data"]
+
+# Expose ports
+EXPOSE 8501
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Default command - run dashboard
+CMD ["streamlit", "run", "src/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]

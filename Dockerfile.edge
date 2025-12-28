@@ -1,0 +1,56 @@
+# AI Flight Recorder - Edge Container
+# Simulates Raspberry Pi 4 constraints (512MB RAM, 1 CPU)
+
+FROM python:3.11-slim
+
+# Labels
+LABEL maintainer="AI Flight Recorder Team"
+LABEL description="Edge device container for AI Flight Recorder"
+LABEL version="1.0"
+
+# Environment
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV TENANT_ID=edge-device-001
+ENV RECEIPTS_FILE=/data/receipts.jsonl
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash flightrecorder
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements first for caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY src/ ./src/
+COPY sim/ ./sim/
+COPY demo/ ./demo/
+COPY cli.py .
+COPY spec.md .
+COPY ledger_schema.json .
+
+# Create data directory
+RUN mkdir -p /data && chown flightrecorder:flightrecorder /data
+
+# Switch to non-root user
+USER flightrecorder
+
+# Volume for persistent data
+VOLUME ["/data"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from src.core import dual_hash; print(dual_hash(b'health'))" || exit 1
+
+# Default command - run continuous decision generation
+CMD ["python", "cli.py", "--run", "1000"]
+
+# Expose no ports by default (edge is isolated)
