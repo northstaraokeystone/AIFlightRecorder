@@ -1,0 +1,7 @@
+# AI Flight Recorder - Core Dependencies
+
+# Cryptography
+blake3>=0.3.0
+
+# No other core dependencies - stdlib only for edge deployment
+# sqlite3, json, gzip, hashlib all in stdlib
