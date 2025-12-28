@@ -1,4 +1,4 @@
-"""AI Flight Recorder v2.0 Constants
+"""AI Flight Recorder v2.2 Constants
 
 Single source of truth for all thresholds and configuration.
 No magic numbers in module code.
@@ -156,3 +156,62 @@ TRIGGER_GREEN_GATE = "GREEN_GATE"
 TRIGGER_YELLOW_GATE = "YELLOW_GATE"
 TRIGGER_RED_GATE = "RED_GATE"
 TRIGGER_WOUND_THRESHOLD = "WOUND_THRESHOLD"
+
+# =============================================================================
+# v2.1 GOVERNANCE THRESHOLDS
+# =============================================================================
+
+# RACI coverage requirements
+RACI_COVERAGE_MIN = 1.0           # 100% of decisions must have RACI
+PROVENANCE_COVERAGE_MIN = 1.0     # 100% of decisions must have provenance
+
+# Provenance capture latency
+SLO_PROVENANCE_CAPTURE_MS = 5     # Provenance capture < 5ms
+SLO_RACI_LOOKUP_MS = 2            # RACI lookup < 2ms
+
+# Training data production
+SLO_TRAINING_EXTRACTION_MS = 100  # Training extraction < 100ms
+TRAINING_MIN_QUALITY_SCORE = 0.6  # Minimum quality for training examples
+TRAINING_BATCH_SIZE = 100         # Fine-tuning batch size
+
+# Audit trail
+SLO_AUDIT_TRAIL_10K_S = 5         # Audit trail generation for 10k < 5s
+
+# =============================================================================
+# v2.2 NEW SLO THRESHOLDS
+# =============================================================================
+
+# Proof module (any mode)
+SLO_PROOF_MS = 150                # Proof operation < 150ms
+
+# Temporal graph operations
+SLO_TEMPORAL_GRAPH_ADD_MS = 20    # Add episode < 20ms
+SLO_TEMPORAL_GRAPH_QUERY_MS = 50  # Query relevant < 50ms
+TEMPORAL_DECAY_TAU = 0.1          # Default temporal decay constant
+
+# CRAG fallback
+SLO_CRAG_ASSESSMENT_MS = 100      # Knowledge sufficiency check < 100ms
+SLO_CRAG_EXTERNAL_MS = 500        # External fallback < 500ms
+CRAG_SUFFICIENCY_THRESHOLD = 0.7  # When to trigger external fallback
+
+# MCP server
+SLO_MCP_TOOL_MS = 200             # MCP tool invocation < 200ms
+
+# Scenario pass rate
+SCENARIO_PASS_RATE_MIN = 1.0      # 100% scenario pass required
+
+# =============================================================================
+# KNOWLEDGE SOURCES
+# =============================================================================
+
+# Default external sources for CRAG
+CRAG_DEFAULT_SOURCES = ["ground_control", "reference_db"]
+
+# =============================================================================
+# ESCALATION TIMEOUTS (minutes)
+# =============================================================================
+
+ESCALATION_L1_TIMEOUT = 5         # Operator level
+ESCALATION_L2_TIMEOUT = 15        # Supervisor level
+ESCALATION_L3_TIMEOUT = 30        # Safety officer level
+ESCALATION_L4_TIMEOUT = 60        # Executive level

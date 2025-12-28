@@ -1,7 +1,7 @@
-"""8 Mandatory Validation Scenarios - v2.0
+"""10 Mandatory Validation Scenarios - v2.2
 
 No deployment without ALL scenarios passing.
-Per monte_carlo.docx specification + v2.0 agent spawning.
+Per monte_carlo.docx specification + v2.0 agent spawning + v2.1 governance + v2.2 CRAG.
 """
 
 from .sim import SimConfig
@@ -170,7 +170,55 @@ SELF_REFERENCE = SimConfig(
     description="Verify L4 receipts inform L0 processing (self-awareness)"
 )
 
-# All scenarios list (8 mandatory scenarios for v2.0)
+# SCENARIO 9: GOVERNANCE (v2.1 NEW)
+# Validate enterprise governance patterns
+GOVERNANCE = SimConfig(
+    name="GOVERNANCE",
+    n_cycles=500,
+    random_seed=222324,
+    stress_vectors={
+        "inject_interventions": 10,  # Inject 10 human interventions
+        "inject_low_confidence": 20,  # Inject 20 low-confidence decisions
+        "require_escalation": 5  # Force 5 escalations
+    },
+    success_criteria={
+        "completion_rate": 0.99,
+        "max_violations": 0,
+        # v2.1 governance criteria
+        "raci_coverage": 1.0,  # 100% of decisions have RACI assignment
+        "provenance_coverage": 1.0,  # 100% of decisions have provenance
+        "valid_reason_codes": True,  # All interventions have valid reason codes
+        "escalation_resolved": True,  # All escalations resolved within timeout
+        "training_examples_created": True  # Interventions create training examples
+    },
+    description="Validate RACI, provenance, reason codes, escalation (v2.1)"
+)
+
+# SCENARIO 10: CRAG_FALLBACK (v2.2 NEW)
+# Validate corrective RAG pattern
+CRAG_FALLBACK = SimConfig(
+    name="CRAG_FALLBACK",
+    n_cycles=200,
+    random_seed=252627,
+    stress_vectors={
+        "inject_sufficient_knowledge": 50,  # 50 decisions with sufficient internal knowledge
+        "inject_knowledge_gap": 50,  # 50 decisions requiring external query
+        "inject_conflicting": 10  # 10 decisions with conflicting internal/external
+    },
+    success_criteria={
+        "completion_rate": 0.99,
+        "max_violations": 0,
+        # v2.2 CRAG criteria
+        "sufficient_no_external": True,  # Internal-sufficient decisions: 0 external queries
+        "gap_triggers_external": True,  # Knowledge-gap decisions: 100% external queries
+        "fusion_improves_confidence": True,  # Conflict resolution: fusion > max(internal, external)
+        "crag_latency_ok": True,  # CRAG latency < 500ms
+        "crag_reduces_spawning": True  # Zero spawned helpers for CRAG-resolved decisions
+    },
+    description="Validate CRAG fallback pattern for knowledge augmentation (v2.2)"
+)
+
+# All scenarios list (10 mandatory scenarios for v2.2)
 ALL_SCENARIOS = [
     BASELINE,
     STRESS,
@@ -179,7 +227,9 @@ ALL_SCENARIOS = [
     COMPRESSION,
     SINGULARITY,
     THERMODYNAMIC,
-    SELF_REFERENCE  # NEW in v2.0
+    SELF_REFERENCE,  # NEW in v2.0
+    GOVERNANCE,  # NEW in v2.1
+    CRAG_FALLBACK  # NEW in v2.2
 ]
 
 # Quick scenarios for fast testing

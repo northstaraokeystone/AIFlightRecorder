@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "2.2",
   "hash_strategy": {
     "algorithm": ["SHA256", "BLAKE3"],
     "format": "sha256_hex:blake3_hex",
@@ -7,32 +7,39 @@
   },
   "receipt_types": {
     "decision": {
+      "description": "Core decision receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "action_type", "confidence", "payload_hash"],
       "optional_fields": ["model_version", "reasoning", "alternatives_considered"]
     },
     "decision_log": {
+      "description": "Decision chain log receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "decision_hash", "prev_hash", "merkle_position", "payload_hash"],
       "optional_fields": ["local_tree_root"]
     },
     "anchor": {
+      "description": "Merkle anchor receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "merkle_root", "hash_algos", "batch_size", "payload_hash"],
       "optional_fields": ["tree_size", "proof_path"]
     },
     "anomaly": {
+      "description": "Anomaly detection receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "metric", "classification", "action", "payload_hash"],
       "optional_fields": ["baseline", "actual", "delta", "affected_decisions"]
     },
     "sync": {
+      "description": "Edge-to-cloud sync receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "edge_device_id", "local_tree_size", "local_root_hash", "consistency_verified", "payload_hash"],
       "optional_fields": ["cloud_tree_size", "cloud_root_hash", "cloud_signature", "decisions_synced", "sync_latency_ms"]
     },
-    "topology": {
-      "required_fields": ["receipt_type", "ts", "tenant_id", "pattern_id", "pattern_type", "topology", "effectiveness", "payload_hash"],
-      "optional_fields": ["escape_velocity", "autonomy_score", "transfer_score", "can_graduate", "can_transfer"]
-    },
     "verification": {
+      "description": "Tamper verification receipt (v1.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "verification_type", "result", "payload_hash"],
       "optional_fields": ["violations", "decisions_checked", "verification_time_ms"]
+    },
+    "topology": {
+      "description": "Pattern topology receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "pattern_id", "pattern_type", "topology", "effectiveness", "payload_hash"],
+      "optional_fields": ["escape_velocity", "autonomy_score", "transfer_score", "can_graduate", "can_transfer"]
     },
     "gate_decision": {
       "description": "Confidence gate decision receipt (v2.0)",
@@ -88,6 +95,86 @@
       "description": "SHEPHERD remediation declined receipt (v2.0)",
       "required_fields": ["receipt_type", "ts", "tenant_id", "plan_id", "anomaly_id", "reason", "payload_hash"],
       "optional_fields": ["shepherd_id"]
+    },
+    "raci": {
+      "description": "RACI accountability assignment receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "decision_type", "responsible", "accountable", "payload_hash"],
+      "optional_fields": ["consulted", "informed"]
+    },
+    "provenance": {
+      "description": "Model/policy provenance receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "model_version", "model_hash", "policy_version", "policy_hash", "payload_hash"],
+      "optional_fields": ["config_version", "config_hash", "training_data_version", "training_data_hash", "provenance_hash", "context"]
+    },
+    "intervention": {
+      "description": "Human intervention receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "reason_code", "correction", "payload_hash"],
+      "optional_fields": ["operator_id", "reason_code_info", "notes", "valid_code", "requires_report", "auto_training"]
+    },
+    "training_example": {
+      "description": "Training example extraction receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "example_id", "decision_id", "reason_code", "label", "quality_score", "payload_hash"],
+      "optional_fields": ["features", "example_hash"]
+    },
+    "training_export": {
+      "description": "Training data export receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "format", "output_path", "example_count", "payload_hash"],
+      "optional_fields": ["total_bytes", "exported_at"]
+    },
+    "finetune": {
+      "description": "Fine-tuning job receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "job_id", "action", "status", "example_count", "payload_hash"],
+      "optional_fields": ["actor", "export_path", "submitted_at", "notes", "created_at"]
+    },
+    "rollback": {
+      "description": "Model rollback receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "from_version", "to_version", "reason", "payload_hash"],
+      "optional_fields": ["rolled_back_at"]
+    },
+    "escalation": {
+      "description": "Decision escalation receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "current_level", "level_name", "reason", "payload_hash"],
+      "optional_fields": ["handlers", "escalated_at", "timeout_minutes", "auto_escalate"]
+    },
+    "escalation_resolved": {
+      "description": "Escalation resolution receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "final_level", "resolution", "payload_hash"],
+      "optional_fields": []
+    },
+    "audit_trail": {
+      "description": "Compliance audit trail receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "trail_id", "decision_count", "raci_coverage", "provenance_coverage", "compliance_status", "payload_hash"],
+      "optional_fields": ["start_time", "end_time", "generated_at", "intervention_count", "anomaly_count", "finding_count", "evidence_confidence"]
+    },
+    "provenance_report": {
+      "description": "Provenance report receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "report_id", "model_version_count", "policy_version_count", "drift_event_count", "coverage", "payload_hash"],
+      "optional_fields": ["start_time", "end_time", "config_version_count"]
+    },
+    "system_event": {
+      "description": "System event receipt (v2.1)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "event_type", "payload_hash"],
+      "optional_fields": ["tools_registered", "resources_registered", "requests_handled", "uptime_since"]
+    },
+    "proof": {
+      "description": "Unified proof receipt - BRIEF/PACKET/DETECT modes (v2.2)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "proof_id", "mode", "confidence", "success", "payload_hash"],
+      "optional_fields": ["input_receipts", "output", "error"]
+    },
+    "memory": {
+      "description": "Temporal graph memory operation receipt (v2.2)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "episode_id", "operation", "payload_hash"],
+      "optional_fields": ["decision_ids_affected", "edges_modified", "graph_stats"]
+    },
+    "crag": {
+      "description": "Corrective RAG fallback receipt (v2.2)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "query_id", "decision_id", "internal_sufficiency", "external_queried", "fusion_confidence", "payload_hash"],
+      "optional_fields": ["sources_used", "latency_ms", "resolved"]
+    },
+    "mcp": {
+      "description": "MCP server request/response receipt (v2.2)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "request_id", "tool_or_resource", "caller_id", "success", "payload_hash"],
+      "optional_fields": ["inputs", "outputs", "latency_ms"]
     }
   },
   "chain_rules": {
@@ -112,7 +199,17 @@
     "monte_carlo_sims": 100,
     "gate_decision_ms": 50,
     "spawn_decision_ms": 100,
-    "entropy_update_ms": 20
+    "entropy_update_ms": 20,
+    "provenance_capture_ms": 5,
+    "raci_lookup_ms": 2,
+    "training_extraction_ms": 100,
+    "audit_trail_10k_s": 5,
+    "proof_ms": 150,
+    "temporal_graph_add_ms": 20,
+    "temporal_graph_query_ms": 50,
+    "crag_assessment_ms": 100,
+    "crag_external_ms": 500,
+    "mcp_tool_ms": 200
   },
   "v2_constraints": {
     "max_agent_depth": 3,
@@ -124,6 +221,11 @@
     "graduation_autonomy_min": 0.7,
     "wound_drop_threshold": 0.15,
     "wound_spawn_threshold": 5,
-    "entropy_conservation_tolerance": 0.001
-  }
+    "entropy_conservation_tolerance": 0.001,
+    "raci_coverage_min": 1.0,
+    "provenance_coverage_min": 1.0,
+    "crag_sufficiency_threshold": 0.7,
+    "scenario_pass_rate_min": 1.0
+  },
+  "receipt_count": 26
 }
