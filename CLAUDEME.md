@@ -615,8 +615,182 @@ assert understand(CLAUDEME) == True, "Re-read from §0"
 
 ---
 
+---
+
+# §12 AI FLIGHT RECORDER v2.2 PATTERNS
+
+> **Extension:** These patterns extend CLAUDEME for autonomous decision systems.
+
+## 12.1 Module Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AI FLIGHT RECORDER v2.2                          │
+├─────────────────────────────────────────────────────────────────────┤
+│ CORE (v1.0)    │ PROOF (v2.2)   │ MEMORY (v2.2)  │ KNOWLEDGE (v2.2)│
+│ dual_hash      │ BRIEF mode     │ temporal.py    │ crag.py         │
+│ emit_receipt   │ PACKET mode    │ episodes       │ sufficiency     │
+│ merkle_*       │ DETECT mode    │ decay          │ fallback        │
+├────────────────┴────────────────┴────────────────┴─────────────────┤
+│ GOVERNANCE (v2.1)    │ TRAINING (v2.1)     │ COMPLIANCE (v2.1)    │
+│ raci.py              │ extractor.py        │ audit_trail.py       │
+│ provenance.py        │ exporter.py         │ provenance_report.py │
+│ reason_codes.py      │ feedback_loop.py    │                      │
+│ escalation.py        │                     │                      │
+├──────────────────────┴─────────────────────┴──────────────────────┤
+│                        MCP (v2.2)                                  │
+│ server.py │ tools.py (5 tools) │ resources.py (8 resources)       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## 12.2 Unified Proof Pattern
+
+```python
+# --- BRIEF MODE: Evidence Synthesis ---
+def synthesize_audit(receipts: list) -> Evidence:
+    result = prove("BRIEF", receipts)
+    emit_proof_receipt(result)
+    return result.output["evidence"]
+
+# --- PACKET MODE: Claim Binding ---
+def bind_sensor_data(sensor: dict, decisions: list) -> BoundPacket:
+    result = prove("PACKET", decisions, context={"claim": sensor})
+    emit_proof_receipt(result)
+    return result.output["packet"]
+
+# --- DETECT MODE: Anomaly Detection ---
+def verify_chain(receipts: list) -> AnomalyResult:
+    result = prove("DETECT", receipts)
+    emit_proof_receipt(result)
+    return result.output["anomaly"]
+```
+
+## 12.3 Temporal Graph Pattern
+
+```python
+# Episode = Decision with temporal context
+episode_id = add_episode(
+    decision={"decision_id": "d1", "action": {"type": "AVOID"}},
+    context={"altitude": 1000},
+    caused_by=["prev_decision_id"]  # Causal link
+)
+
+# Query with relevance scoring
+relevant = query_relevant(
+    {"action_type": "AVOID", "confidence_min": 0.7},
+    time_window=("2024-01-01T00:00:00Z", None),
+    limit=10
+)
+
+# Trace causality (root cause or blast radius)
+lineage = get_decision_lineage("d1", direction="backward", max_depth=5)
+```
+
+## 12.4 CRAG Fallback Pattern
+
+```python
+# CRAG happens BEFORE spawning helpers
+result = perform_crag(
+    query={"action_type": "AVOID"},
+    decision_id="d1",
+    internal_results=query_relevant(query),  # From temporal graph
+    sufficiency_threshold=0.7
+)
+
+if result.resolved:
+    # Knowledge sufficient, no helpers needed
+    pass
+else:
+    # Spawn investigator agents
+    spawn_helpers(result.decision_id)
+```
+
+## 12.5 Governance Receipts
+
+```python
+# RACI: Every decision needs accountability
+assignment = assign_accountability(decision, "avoidance")
+emit_raci_receipt(assignment)
+
+# Provenance: Track model/policy versions
+record = capture_provenance(decision_id)
+emit_provenance_receipt(record)
+
+# Intervention: Standardized reason codes
+emit_intervention_receipt(
+    decision_id="d1",
+    reason_code="MODEL_ERROR",  # From 14 standard codes
+    correction={"action": {"type": "AVOID"}},
+    operator_id="op1"
+)
+
+# Escalation: Route to appropriate level
+path = route_escalation(decision_id, decision, context)
+emit_escalation_receipt(path)
+```
+
+## 12.6 MCP Integration Pattern
+
+```python
+# MCP Server exposes Flight Recorder capabilities
+server = start_server()
+
+# Tools: Actions external orchestrators can invoke
+handle_mcp_request(
+    request_type="tool",
+    name="inject_intervention",
+    inputs={"decision_id": "d1", "reason_code": "TESTING", "correction": {}},
+    caller_id="external_orchestrator"
+)
+
+# Resources: Data external orchestrators can read
+handle_mcp_request(
+    request_type="resource",
+    name="flight://decisions/stream",
+    inputs={"limit": 50},
+    caller_id="external_orchestrator"
+)
+```
+
+## 12.7 Receipt Type Summary (26 Total)
+
+| Version | Receipt Types |
+|---------|---------------|
+| v1.0    | decision, decision_log, anchor |
+| v2.0    | spawn, wound, remediation, pattern_graduation, gate, monte_carlo, entropy, anomaly_alert |
+| v2.1    | raci, provenance, intervention, training_example, training_export, finetune, rollback, escalation, escalation_resolved, audit_trail, provenance_report, system_event |
+| v2.2    | proof, memory, crag, mcp |
+
+## 12.8 Feature Deployment Stages
+
+```python
+# Progressive deployment from shadow to full
+DEPLOYMENT_STAGES = {
+    "shadow": {
+        "PROOF_CONSOLIDATED": True,
+        "MCP_SERVER": True,  # Read-only
+        "TEMPORAL_MEMORY": False,
+        "CRAG_FALLBACK": False
+    },
+    "canary": {
+        "PROOF_CONSOLIDATED": True,
+        "MCP_SERVER": True,
+        "TEMPORAL_MEMORY": True,
+        "CRAG_FALLBACK": False
+    },
+    "full": {
+        "PROOF_CONSOLIDATED": True,
+        "MCP_SERVER": True,
+        "TEMPORAL_MEMORY": True,
+        "CRAG_FALLBACK": True
+    }
+}
+```
+
+---
+
 **Hash of this document:** `COMPUTE_ON_SAVE`
-**Version:** 3.1
+**Version:** 3.1 + AI Flight Recorder v2.2
 **Status:** ACTIVE
 
 *No receipt → not real. Ship at T+48h or kill.*
