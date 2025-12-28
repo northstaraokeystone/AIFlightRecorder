@@ -431,3 +431,120 @@ def generate_topology_report(decisions: list[dict], domain: str = "drone_navigat
             for a in analyses
         ]
     }
+
+
+# =============================================================================
+# v2.0 TOPOLOGY CLASSIFICATION ADDITIONS
+# =============================================================================
+# Apply META-LOOP classification to decision patterns:
+# - OPEN: effectiveness >= 0.85, autonomy > 0.75 → Graduate to permanent
+# - CLOSED: effectiveness < 0.85 → Prune, extract learnings
+# - HYBRID: transfer_score > 0.70 → Transfer to other context
+
+
+def classify_topology_v2(pattern_dict: dict) -> str:
+    """Classify pattern topology from a dict input.
+
+    v2.0 API for easier integration with spawner module.
+
+    Classification rules:
+    - OPEN: effectiveness >= 0.85, autonomy > 0.75 → Graduate to permanent
+    - CLOSED: effectiveness < 0.85 → Prune, extract learnings
+    - HYBRID: transfer_score > 0.70 → Transfer to other context
+
+    Args:
+        pattern_dict: Dict with effectiveness, autonomy_score, transfer_score, domain
+
+    Returns:
+        "open" | "closed" | "hybrid"
+    """
+    effectiveness = pattern_dict.get("effectiveness", 0.0)
+    autonomy_score = pattern_dict.get("autonomy_score", 0.0)
+    transfer_score = pattern_dict.get("transfer_score", 0.0)
+    domain = pattern_dict.get("domain", "default")
+
+    # Import thresholds from config
+    try:
+        from config.constants import (
+            EFFECTIVENESS_OPEN_THRESHOLD,
+            AUTONOMY_THRESHOLD as CFG_AUTONOMY_THRESHOLD,
+            TRANSFER_THRESHOLD as CFG_TRANSFER_THRESHOLD
+        )
+        eff_threshold = EFFECTIVENESS_OPEN_THRESHOLD
+        auto_threshold = CFG_AUTONOMY_THRESHOLD
+        trans_threshold = CFG_TRANSFER_THRESHOLD
+    except ImportError:
+        eff_threshold = 0.85
+        auto_threshold = AUTONOMY_THRESHOLD
+        trans_threshold = TRANSFER_THRESHOLD
+
+    # Classification logic per v2.0 spec
+    if transfer_score >= trans_threshold:
+        return "hybrid"
+    elif effectiveness >= eff_threshold and autonomy_score >= auto_threshold:
+        return "open"
+    else:
+        return "closed"
+
+
+def topology_action_v2(topology: str) -> str:
+    """Get recommended action for topology classification.
+
+    Args:
+        topology: Topology classification result
+
+    Returns:
+        Action description
+    """
+    actions = {
+        "open": "Graduate to permanent pattern",
+        "closed": "Prune and extract learnings",
+        "hybrid": "Transfer to compatible context"
+    }
+    return actions.get(topology, "Unknown topology")
+
+
+def classify_agent_for_topology(
+    agent_id: str,
+    effectiveness: float,
+    autonomy_score: float,
+    transfer_score: float,
+    domain: str = "default"
+) -> dict:
+    """Classify an agent's topology for spawner integration.
+
+    Args:
+        agent_id: Agent ID
+        effectiveness: Effectiveness score
+        autonomy_score: Autonomy score
+        transfer_score: Transfer score
+        domain: Domain for escape velocity
+
+    Returns:
+        Classification result dict
+    """
+    pattern_dict = {
+        "effectiveness": effectiveness,
+        "autonomy_score": autonomy_score,
+        "transfer_score": transfer_score,
+        "domain": domain
+    }
+
+    topology = classify_topology_v2(pattern_dict)
+
+    # Check escape velocity
+    threshold = ESCAPE_VELOCITY.get(domain, ESCAPE_VELOCITY["default"])
+    can_graduate = effectiveness >= threshold and autonomy_score >= AUTONOMY_THRESHOLD
+
+    return {
+        "agent_id": agent_id,
+        "topology": topology,
+        "effectiveness": effectiveness,
+        "autonomy_score": autonomy_score,
+        "transfer_score": transfer_score,
+        "domain": domain,
+        "escape_velocity_threshold": threshold,
+        "can_graduate": can_graduate,
+        "can_transfer": transfer_score >= TRANSFER_THRESHOLD,
+        "recommended_action": topology_action_v2(topology)
+    }

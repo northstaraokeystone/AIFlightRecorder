@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "hash_strategy": {
     "algorithm": ["SHA256", "BLAKE3"],
     "format": "sha256_hex:blake3_hex",
@@ -33,6 +33,61 @@
     "verification": {
       "required_fields": ["receipt_type", "ts", "tenant_id", "verification_type", "result", "payload_hash"],
       "optional_fields": ["violations", "decisions_checked", "verification_time_ms"]
+    },
+    "gate_decision": {
+      "description": "Confidence gate decision receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "confidence_score", "gate_tier", "context_drift", "payload_hash"],
+      "optional_fields": ["reasoning_entropy", "agents_spawned", "variance_score", "monte_carlo_stable"]
+    },
+    "spawn": {
+      "description": "Agent spawn receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "parent_agent_id", "child_agents", "trigger", "confidence_at_spawn", "depth_level", "payload_hash"],
+      "optional_fields": ["max_ttl_seconds", "gate_tier", "wound_count"]
+    },
+    "graduation": {
+      "description": "Pattern graduation receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "agent_id", "solution_pattern_id", "effectiveness", "autonomy_score", "promoted_to", "payload_hash"],
+      "optional_fields": ["domain", "usage_count", "pattern_context"]
+    },
+    "pruning": {
+      "description": "Agent pruning receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "agents_terminated", "reason", "resources_freed", "payload_hash"],
+      "optional_fields": ["trigger_source", "depth_level"]
+    },
+    "monte_carlo": {
+      "description": "Monte Carlo simulation receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "n_simulations", "variance", "mean_outcome", "is_stable", "latency_ms", "payload_hash"],
+      "optional_fields": ["std_dev", "min_outcome", "max_outcome", "confidence_interval"]
+    },
+    "entropy": {
+      "description": "Entropy engine state receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "cycle_id", "system_entropy_bits", "entropy_delta", "conservation_valid", "payload_hash"],
+      "optional_fields": ["agents_fitness", "superposition_count", "entropy_budget", "trend"]
+    },
+    "wound": {
+      "description": "Wound detection receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "decision_id", "confidence_before", "confidence_after", "drop_magnitude", "wound_index", "payload_hash"],
+      "optional_fields": ["triggers_spawn", "helpers_spawned"]
+    },
+    "anomaly_alert": {
+      "description": "HUNTER anomaly alert receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "anomaly_id", "anomaly_type", "severity", "decision_id", "description", "detected_at", "payload_hash"],
+      "optional_fields": ["ncd_score", "hunter_id", "agent_id"]
+    },
+    "remediation_proposal": {
+      "description": "SHEPHERD remediation proposal receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "plan_id", "anomaly_id", "actions_count", "confidence", "risk_level", "requires_approval", "payload_hash"],
+      "optional_fields": ["auto_approve", "proposed_at", "approval_deadline", "shepherd_id", "agent_id"]
+    },
+    "remediation": {
+      "description": "SHEPHERD remediation execution receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "plan_id", "anomaly_id", "status", "approval_type", "actions_executed", "all_succeeded", "payload_hash"],
+      "optional_fields": ["shepherd_id", "agent_id"]
+    },
+    "remediation_declined": {
+      "description": "SHEPHERD remediation declined receipt (v2.0)",
+      "required_fields": ["receipt_type", "ts", "tenant_id", "plan_id", "anomaly_id", "reason", "payload_hash"],
+      "optional_fields": ["shepherd_id"]
     }
   },
   "chain_rules": {
@@ -52,6 +107,23 @@
     "compression_ratio_tolerance": 0.05,
     "tamper_detection_ms": 500,
     "sync_verification_ms": 2000,
-    "edge_memory_mb": 512
+    "edge_memory_mb": 512,
+    "monte_carlo_latency_ms": 200,
+    "monte_carlo_sims": 100,
+    "gate_decision_ms": 50,
+    "spawn_decision_ms": 100,
+    "entropy_update_ms": 20
+  },
+  "v2_constraints": {
+    "max_agent_depth": 3,
+    "max_agent_population": 50,
+    "agent_default_ttl_seconds": 300,
+    "gate_green_threshold": 0.9,
+    "gate_yellow_threshold": 0.7,
+    "graduation_effectiveness_min": 0.8,
+    "graduation_autonomy_min": 0.7,
+    "wound_drop_threshold": 0.15,
+    "wound_spawn_threshold": 5,
+    "entropy_conservation_tolerance": 0.001
   }
 }
