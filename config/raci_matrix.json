@@ -1,0 +1,86 @@
+{
+  "version": "2.1",
+  "description": "RACI matrix for AI Flight Recorder decision types",
+  "default": {
+    "responsible": "ai_system",
+    "accountable": "operator",
+    "consulted": [],
+    "informed": ["audit_log"]
+  },
+  "decision_types": {
+    "navigation": {
+      "responsible": "ai_system",
+      "accountable": "flight_controller",
+      "consulted": ["path_planner"],
+      "informed": ["telemetry", "audit_log"]
+    },
+    "continue": {
+      "responsible": "ai_system",
+      "accountable": "flight_controller",
+      "consulted": [],
+      "informed": ["telemetry", "audit_log"]
+    },
+    "avoidance": {
+      "responsible": "ai_system",
+      "accountable": "safety_officer",
+      "consulted": ["sensor_fusion", "threat_detection"],
+      "informed": ["ground_control", "audit_log"]
+    },
+    "avoid": {
+      "responsible": "ai_system",
+      "accountable": "safety_officer",
+      "consulted": ["sensor_fusion", "threat_detection"],
+      "informed": ["ground_control", "audit_log"]
+    },
+    "abort": {
+      "responsible": "ai_system",
+      "accountable": "safety_officer",
+      "consulted": ["ground_control"],
+      "informed": ["operator", "regulatory", "audit_log"]
+    },
+    "rtb": {
+      "responsible": "ai_system",
+      "accountable": "flight_controller",
+      "consulted": [],
+      "informed": ["ground_control", "audit_log"]
+    },
+    "emergency": {
+      "responsible": "ai_system",
+      "accountable": "safety_officer",
+      "consulted": ["ground_control", "safety_systems"],
+      "informed": ["operator", "regulatory", "emergency_services", "audit_log"]
+    },
+    "sensor_override": {
+      "responsible": "operator",
+      "accountable": "safety_officer",
+      "consulted": ["ai_system", "sensor_fusion"],
+      "informed": ["audit_log", "regulatory"]
+    },
+    "human_intervention": {
+      "responsible": "operator",
+      "accountable": "safety_officer",
+      "consulted": [],
+      "informed": ["ai_system", "audit_log", "regulatory"]
+    },
+    "maintenance": {
+      "responsible": "maintenance_team",
+      "accountable": "operations_manager",
+      "consulted": ["ai_system"],
+      "informed": ["audit_log"]
+    }
+  },
+  "severity_escalation": {
+    "high": {
+      "add_consulted": ["safety_officer"],
+      "add_informed": ["regulatory"]
+    },
+    "critical": {
+      "add_consulted": ["safety_officer", "ground_control"],
+      "add_informed": ["regulatory", "executive"]
+    }
+  },
+  "low_confidence_escalation": {
+    "threshold": 0.7,
+    "add_consulted": ["ground_control"]
+  }
+}

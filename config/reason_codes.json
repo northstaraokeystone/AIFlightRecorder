@@ -1,0 +1,105 @@
+{
+  "version": "2.1",
+  "description": "Standard reason codes for human interventions",
+  "categories": ["safety", "operational", "model", "policy", "testing", "other"],
+  "codes": {
+    "SAFETY_CRITICAL": {
+      "code": "S001",
+      "category": "safety",
+      "description": "Safety-critical override by human operator",
+      "requires_report": true,
+      "auto_training": true
+    },
+    "IMMINENT_DANGER": {
+      "code": "S002",
+      "category": "safety",
+      "description": "Imminent danger detected, emergency intervention",
+      "requires_report": true,
+      "auto_training": true
+    },
+    "SENSOR_MALFUNCTION": {
+      "code": "S003",
+      "category": "safety",
+      "description": "Sensor malfunction suspected or confirmed",
+      "requires_report": true,
+      "auto_training": false
+    },
+    "MISSION_CHANGE": {
+      "code": "O001",
+      "category": "operational",
+      "description": "Mission parameters changed",
+      "requires_report": false,
+      "auto_training": false
+    },
+    "WEATHER_OVERRIDE": {
+      "code": "O002",
+      "category": "operational",
+      "description": "Weather conditions require manual override",
+      "requires_report": false,
+      "auto_training": true
+    },
+    "AIRSPACE_RESTRICTION": {
+      "code": "O003",
+      "category": "operational",
+      "description": "Airspace restriction requires path change",
+      "requires_report": true,
+      "auto_training": true
+    },
+    "MODEL_ERROR": {
+      "code": "M001",
+      "category": "model",
+      "description": "Model made incorrect decision",
+      "requires_report": true,
+      "auto_training": true
+    },
+    "CONFIDENCE_OVERRIDE": {
+      "code": "M002",
+      "category": "model",
+      "description": "Operator disagrees with AI confidence assessment",
+      "requires_report": false,
+      "auto_training": true
+    },
+    "CONTEXT_MISSING": {
+      "code": "M003",
+      "category": "model",
+      "description": "AI missing relevant context that operator has",
+      "requires_report": false,
+      "auto_training": true
+    },
+    "POLICY_VIOLATION": {
+      "code": "P001",
+      "category": "policy",
+      "description": "Decision would violate policy",
+      "requires_report": true,
+      "auto_training": false
+    },
+    "REGULATORY_COMPLIANCE": {
+      "code": "P002",
+      "category": "policy",
+      "description": "Regulatory compliance requires override",
+      "requires_report": true,
+      "auto_training": false
+    },
+    "TESTING": {
+      "code": "T001",
+      "category": "testing",
+      "description": "Test intervention, not production",
+      "requires_report": false,
+      "auto_training": false
+    },
+    "CALIBRATION": {
+      "code": "T002",
+      "category": "testing",
+      "description": "System calibration intervention",
+      "requires_report": false,
+      "auto_training": false
+    },
+    "OTHER": {
+      "code": "X001",
+      "category": "other",
+      "description": "Other reason (requires notes)",
+      "requires_report": true,
+      "auto_training": false
+    }
+  }
+}
